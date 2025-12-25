@@ -9,6 +9,7 @@
 		"build": "nest build",
 		"format": "biome format --write .",
 		"start": "nest start --type-check",
+		"dev": "nest start --watch",
 		"start:dev": "nest start --watch",
 		"start:debug": "nest start --debug --watch --type-check",
 		"start:prod": "node dist/main",
