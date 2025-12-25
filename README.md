@@ -1,135 +1,178 @@
-# Turborepo starter
+# Fullstack Monorepo Demo
 
-This Turborepo starter is maintained by the Turborepo core team.
+A modern, scalable fullstack application built with **NestJS**, **Next.js**, and **Turborepo**. This project demonstrates industry-standard architectural patterns designed for maintainability, testability, and scalability.
 
-## Using this example
+## 🧠 Technology Decisions
 
-Run the following command:
+This section outlines the core technologies used in this project, **where** they are located in the codebase, and **why** they were chosen.
 
-```sh
-npx create-turbo@latest
-```
+### 1. Monorepo & Tooling
 
-## What's inside?
+| Technology | Where? | Why? |
+| :--- | :--- | :--- |
+| **[Turborepo](https://turbo.build/)** | Root (`turbo.json`) | Provides strict dependency management, high-performance build caching, and parallel task execution (lint, build, test) across the workspace. |
+| **[Biome](https://biomejs.dev/)** | Root (`biome.json`) | An extremely fast, Rust-based unified linter and formatter. It replaces the complex setup of ESLint + Prettier, offering instant feedback and consistent code style. |
+| **[Vitest](https://vitest.dev/)** | Apps (`vitest.config.ts`) | A next-generation test runner powered by Vite. It offers native TypeScript support, fast execution, and a Jest-compatible API. |
 
-This Turborepo includes the following packages/apps:
+### 2. Backend (`apps/backend`)
 
-### Apps and Packages
+| Technology | Where? | Why? |
+| :--- | :--- | :--- |
+| **[NestJS 11](https://nestjs.com/)** | Core Framework | A progressive Node.js framework that provides a rigid, modular structure primarily based on **Clean Architecture**. It uses Dependency Injection to decouple business logic from infrastructure. |
+| **`class-validator`** | DTOs (`presentation/dtos`) | Enables declarative validation of incoming network requests using decorators (e.g., `@IsEmail()`). This ensures data integrity at the application boundary. |
+| **`class-transformer`** | DTOs / Entities | Handles serialization and deserialization of objects, transforming plain JSON into class instances and vice versa. |
+| **[RxJS](https://rxjs.dev/)** | Services / Interceptors | A powerful library for reactive programming. It is used to handle asynchronous data streams and event-based logic efficiently. |
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+### 3. Frontend (`apps/frontend`)
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+| Technology | Where? | Why? |
+| :--- | :--- | :--- |
+| **[Next.js 16](https://nextjs.org/)** | Core Framework | Uses the **App Router** for robust server-side rendering (SEO), simplified file-system based routing, and React Server Components for performance. |
+| **[TailwindCSS v4](https://tailwindcss.com/)** | Styling | A utility-first CSS framework that reduces bundle size and enforces a consistent design system without leaving the HTML. |
+| **[`@tanstack/react-query`](https://tanstack.com/query)** | Services (`features/*/services`) | Manages server state (fetching, caching, synchronizing, and updating server state) independently of UI state, eliminating "useEffect" spaghetti code. |
+| **[`@tanstack/react-form`](https://tanstack.com/form)** | Components (`features/*/components`) | A headless, type-safe form management library that decouples form logic from UI components, providing better performance and flexibility. |
+| **[CVA](https://cva.style/)** | UI (`components/ui`) | Class Variance Authority. Allows the creation of type-safe, multi-variant UI components (e.g., a button with `primary`, `secondary`, `ghost` variants) cleanly. |
+| **`lucide-react`** | UI Components | A consistent, lightweight, and tree-shakeable icon library. |
+| **[Motion](https://motion.dev/)** | UI Animations | A production-ready motion library for React that provides declarative, physics-based animations. |
 
-### Utilities
+## 🏗️ Architecture Overview
 
-This Turborepo has some additional tools already setup for you:
+### Monorepo Structure
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+This project uses Turborepo to manage multiple applications and packages.
 
-### Build
+- `apps/backend`: NestJS API application.
+- `apps/frontend`: Next.js web application.
+- `packages/`: Shared libraries (if applicable).
 
-To build all apps and packages, run the following command:
+### Backend (NestJS)
 
-```
-cd my-turborepo
+The backend follows **Clean Architecture** principles to separate concerns and make the business logic independent of frameworks and drivers.
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
+#### Folder Structure (`apps/backend/src`)
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
+The code is organized by **Modules** (vertical slicing), and within each module, by **Layers** (horizontal slicing).
 
 ```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+src/
+├── modules/
+│   └── [module-name]/          # e.g., users
+│       ├── domain/             # Enterprise business rules
+│       │   ├── entities/       # Pure domain objects
+│       │   └── repositories/   # Repository interfaces
+│       ├── application/        # Application business rules
+│       │   ├── use-cases/      # Specific user actions
+│       │   └── dto/            # Data Transfer Objects
+│       ├── infrastructure/     # Frameworks & Drivers
+│       │   └── persistence/    # Database implementations
+│       └── presentation/       # Interface Adapters
+│           ├── controllers/    # HTTP Controllers
+│           └── dtos/           # Input/Output DTOs
+├── shared/                     # Shared kernel/utilities
+└── main.ts                     # Entry point
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+### Frontend (Next.js)
+
+The frontend uses a **Feature-Based Architecture**, keeping related components, hooks, and services together.
+
+#### Folder Structure (`apps/frontend/src`)
 
 ```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+src/
+├── app/                        # Next.js App Router (pages & layouts)
+├── components/
+│   └── ui/                     # Shared UI components (Shadcn/UI style)
+├── features/                   # Feature-specific code
+│   └── [feature-name]/         # e.g., users
+│       ├── components/         # Feature-specific components
+│       ├── services/           # API calls for this feature
+│       └── types/              # Feature-specific types
+├── lib/                        # Shared utilities (e.g., api-client)
+└── styles/                     # Global styles
 ```
 
-### Remote Caching
+## 🚀 Getting Started
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+### Prerequisites
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+- Node.js (Latest LTS recommended, >=20)
+- npm
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+### Installation
 
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+```bash
+npm install
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+### Running Development Server
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+Start both frontend and backend in development mode:
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+```bash
+npm run dev
 ```
 
-## Useful Links
+- **Frontend**: http://localhost:3000
+- **Backend**: http://localhost:3002
 
-Learn more about the power of Turborepo:
+### Testing
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+Run tests across the workspace:
+
+```bash
+npm run test
+```
+
+## 🐳 Docker Deployment
+
+The project is fully dockerized for production-grade deployment.
+
+```bash
+docker-compose up --build
+```
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:3002
+
+## 📏 Development Standards
+
+### Linting & Formatting
+
+We use **Biome** for fast and efficient linting and formatting.
+
+```bash
+npm run format
+npm run lint
+```
+
+### Type Checking
+
+Ensure type safety with TypeScript:
+
+```bash
+# Check backend
+npx tsc -p apps/backend/tsconfig.json --noEmit
+
+# Check frontend
+npx tsc -p apps/frontend/tsconfig.json --noEmit
+```
+
+---
+
+## 🤖 Guide for AI Models
+
+**Role**: You are an expert software architect acting as a pair programmer.
+
+**Objective**: When extending this codebase, YOU MUST adhere strictly to the established architectural patterns.
+
+### Backend Rules
+1.  **Clean Architecture**: Always update the `Domain` layer first (Entities/Interfaces), then `Application` (Use Cases), then `Infrastructure` (Persistence), and finally `Presentation` (Controllers).
+2.  **Dependency Rule**: Source code dependencies can only point *inwards*. Inner layers (Domain) must NOT depend on outer layers (Infrastructure/Presentation).
+3.  **Imports**: Use the `@/` alias for all internal imports. Avoid relative paths like `../../`.
+4.  **Testing**: Create unit tests for Use Cases mocking the Repository interface.
+
+### Frontend Rules
+1.  **Feature Isolation**: Place new feature code in `src/features/[feature-name]`.
+2.  **Shared Components**: Only highly reusable "dumb" components go in `src/components/ui`.
+3.  **API Client**: Use the shared `api-client` in `src/features/[feature]/services` for all network requests.
