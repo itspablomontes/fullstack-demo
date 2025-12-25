@@ -1,4 +1,4 @@
-import type { IRepository } from "../../../../shared/domain/repository.interface";
+import type { IRepository } from "@/shared/domain/repository.interface";
 import type { User } from "../entities/user.entity";
 
 export interface UserRepository extends IRepository<User> {
